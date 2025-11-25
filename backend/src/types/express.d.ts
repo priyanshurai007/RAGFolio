@@ -1,6 +1,8 @@
+/// <reference types="express" />
+
 // Augment Express Request type to include user property
 declare namespace Express {
-  export interface Request {
+  interface Request {
     user?: {
       userId: string;
       email: string;
