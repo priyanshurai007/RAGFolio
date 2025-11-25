@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ragfolio-postgres
+    environment:
+      POSTGRES_USER: ragfolio
+      POSTGRES_PASSWORD: ragfolio123
+      POSTGRES_DB: ragfolio
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ragfolio"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  parser:
+    build:
+      context: ./parser
+      dockerfile: Dockerfile
+    container_name: ragfolio-parser
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ragfolio-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://ragfolio:ragfolio123@postgres:5432/ragfolio
+      - PARSER_SERVICE_URL=http://parser:8001
+      - JWT_SECRET=${JWT_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_EMBEDDING_MODEL=${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+      - OPENAI_LLM_MODEL=${OPENAI_LLM_MODEL:-gpt-4o-mini}
+      - VECTOR_DB_PROVIDER=${VECTOR_DB_PROVIDER:-faiss}
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_ENVIRONMENT=${PINECONE_ENVIRONMENT}
+      - PINECONE_INDEX_NAME=${PINECONE_INDEX_NAME}
+      - FAISS_INDEX_PATH=/app/faiss_index
+      - CHUNK_SIZE=${CHUNK_SIZE:-350}
+      - CHUNK_OVERLAP=${CHUNK_OVERLAP:-100}
+      - TOP_K_RESULTS=${TOP_K_RESULTS:-5}
+      - SIMILARITY_THRESHOLD=${SIMILARITY_THRESHOLD:-0.7}
+      - FRONTEND_URL=http://localhost:5173
+    volumes:
+      - ./uploads:/app/uploads
+      - ./faiss_index:/app/faiss_index
+    depends_on:
+      postgres:
+        condition: service_healthy
+      parser:
+        condition: service_healthy
+    command: sh -c "npm run migrate && npm run dev"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: ragfolio-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  postgres-data:
