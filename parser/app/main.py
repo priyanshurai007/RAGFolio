@@ -1,7 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import logging
+import tempfile
+import os
 
 from app.parser import parse_document
 from app.section_detector import detect_sections
@@ -47,29 +49,29 @@ async def health_check():
 
 
 @app.post("/parse", response_model=ParseResponse)
-async def parse_resume(request: ParseRequest):
+async def parse_resume(file: UploadFile = File(...)):
     """
     Parse a resume file (PDF or DOCX) and extract structured information.
     
     Args:
-        request: ParseRequest containing file_path
+        file: Uploaded file (PDF or DOCX)
         
     Returns:
         ParseResponse with raw_text, sections, and metadata
     """
+    temp_path = None
     try:
-        import os
-        # Normalize path for Windows
-        file_path = os.path.normpath(request.file_path)
-        logger.info(f"Parsing file: {file_path}")
+        # Save uploaded file to temporary location
+        suffix = os.path.splitext(file.filename)[1]
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp_file:
+            content = await file.read()
+            temp_file.write(content)
+            temp_path = temp_file.name
         
-        # Check if file exists
-        if not os.path.exists(file_path):
-            logger.error(f"File not found at path: {file_path}")
-            raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
+        logger.info(f"Processing uploaded file: {file.filename} (temp: {temp_path})")
         
         # Extract raw text from document
-        raw_text, metadata = parse_document(file_path)
+        raw_text, metadata = parse_document(temp_path)
         
         if not raw_text:
             raise HTTPException(status_code=400, detail="Could not extract text from document")
@@ -81,9 +83,9 @@ async def parse_resume(request: ParseRequest):
         links = []
         profile_analysis = {}
         
-        if file_path.lower().endswith('.pdf'):
+        if file.filename.lower().endswith('.pdf'):
             try:
-                links = extract_links_from_pdf(file_path)
+                links = extract_links_from_pdf(temp_path)
                 logger.info(f"Extracted {len(links)} links from PDF")
                 
                 # Analyze the extracted links
@@ -104,14 +106,18 @@ async def parse_resume(request: ParseRequest):
             links=links,
             profile_analysis=profile_analysis
         )
-        
-    except FileNotFoundError:
-        logger.error(f"File not found: {request.file_path}")
-        raise HTTPException(status_code=404, detail="File not found")
     
     except Exception as e:
         logger.error(f"Error parsing document: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error parsing document: {str(e)}")
+    
+    finally:
+        # Clean up temporary file
+        if temp_path and os.path.exists(temp_path):
+            try:
+                os.unlink(temp_path)
+            except Exception as e:
+                logger.warning(f"Could not delete temp file: {e}")
 
 
 if __name__ == "__main__":

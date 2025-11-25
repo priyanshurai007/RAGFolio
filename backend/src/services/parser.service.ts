@@ -95,21 +95,32 @@ export interface ParsedResume {
 
 export async function parseResume(filePath: string): Promise<ParsedResume> {
   try {
+    const fs = require('fs');
+    const FormData = require('form-data');
+    
     // Convert to absolute path if relative
     const absolutePath = path.isAbsolute(filePath) 
       ? filePath 
       : path.resolve(process.cwd(), filePath);
     
-    console.log('Sending to parser (absolute):', absolutePath);
+    console.log('Sending file to parser:', absolutePath);
+    
+    // Create form data with file
+    const formData = new FormData();
+    formData.append('file', fs.createReadStream(absolutePath), {
+      filename: path.basename(absolutePath),
+    });
     
     const response = await axios.post(
       `${config.parser.serviceUrl}/parse`,
-      { file_path: absolutePath },
+      formData,
       {
         headers: {
-          'Content-Type': 'application/json',
+          ...formData.getHeaders(),
         },
         timeout: 30000, // 30 second timeout
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
       }
     );
     
