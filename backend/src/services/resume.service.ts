@@ -220,7 +220,7 @@ export async function getUserResumes(userId: string): Promise<ResumeData[]> {
     [userId]
   );
   
-  return result.rows.map(row => ({
+  return result.rows.map((row: any) => ({
     id: row.id,
     userId: row.user_id,
     filename: row.filename,

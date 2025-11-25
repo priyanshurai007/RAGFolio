@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken, AuthPayload } from '../services/auth.service';
+import { verifyToken } from '../services/auth.service';
 
 export interface AuthRequest extends Request {
-  user?: AuthPayload;
+  user?: any;
 }
 
 export function authMiddleware(
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ): void {
