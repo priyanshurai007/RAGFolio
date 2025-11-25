@@ -1,21 +1,18 @@
 # RAGfolio
 
-> A production-quality Resume-driven RAG (Retrieval-Augmented Generation) portfolio web application that allows users to upload their resume, automatically extracts structured information, and provides an AI-powered interview assistant that answers questions based solely on the resume content.
+> Resume-driven RAG (Retrieval-Augmented Generation) portfolio web application with Resume Authenticity Score and Profile Analysis features.
 
-[![CI](https://github.com/yourusername/ragfolio/workflows/CI/badge.svg)](https://github.com/yourusername/ragfolio/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 🚀 Features
 
-- **📄 Resume Upload**: Support for PDF and DOCX files with progress tracking
-- **🔍 Smart Parsing**: Automatic detection and extraction of Education, Experience, Skills, Projects, Achievements, and more
-- **✏️ Editable Profiles**: Review and correct parsed data before indexing
-- **🤖 AI Interview Assistant**: Ask natural language questions and get accurate answers sourced from the resume
-- **🔒 Anti-Hallucination**: Strict RAG implementation ensures answers are grounded in actual resume content
-- **🗄️ Vector Search**: Pluggable vector database support (Pinecone, FAISS)
+- **📄 Resume Upload**: PDF and DOCX support with link extraction
+- **🔍 Smart Parsing**: Extracts Education, Experience, Skills, Projects, and hyperlinks
+- **🔗 Profile Analysis**: Analyzes GitHub, LeetCode, LinkedIn profiles from resume links
+- **⭐ Authenticity Score**: Calculates resume authenticity based on profile analysis
+- **🤖 AI Interview Assistant**: RAG-powered Q&A based on resume content
+- **🗄️ Vector Search**: FAISS-based semantic search
 - **🔐 Authentication**: JWT-based secure authentication
-- **🐳 Docker Ready**: Complete Docker Compose setup for easy deployment
-- **✅ Tested**: Comprehensive unit and integration tests
 
 ## 🏗️ Architecture
 
@@ -70,370 +67,167 @@
 
 ## 📋 Prerequisites
 
-- Node.js 18+
-- Python 3.11+
-- PostgreSQL 15+
-- Docker & Docker Compose (optional but recommended)
+- Node.js 22+ 
+- Python 3.9+
+- PostgreSQL 16+
 - OpenAI API key
-- Pinecone API key (optional, can use FAISS)
 
-## 🚀 Quick Start with Docker
+## 🚀 Local Setup
 
-1. **Clone the repository**
-```bash
-git clone https://github.com/yourusername/ragfolio.git
-cd ragfolio
+### 1. Database Setup
+
+Create PostgreSQL database and run schema:
+
+```powershell
+# Open PostgreSQL
+psql -U postgres
+
+# Create database
+CREATE DATABASE ragfolio;
+
+# Exit and run schema
+psql -U postgres -d ragfolio -f setup_database.sql
 ```
 
-2. **Set up environment variables**
-```bash
-cp .env.example .env
-# Edit .env and add your API keys
-```
+### 2. Configure Environment
 
-Required environment variables:
+Edit `.env` file with your credentials:
+
 ```env
-JWT_SECRET=your-super-secret-jwt-key
-OPENAI_API_KEY=sk-your-openai-api-key
-PINECONE_API_KEY=your-pinecone-api-key  # or use FAISS
-VECTOR_DB_PROVIDER=pinecone  # or faiss
+DATABASE_URL=postgresql://postgres:your-password@localhost:5432/ragfolio
+PARSER_SERVICE_URL=http://127.0.0.1:8001
+JWT_SECRET=your-secret-key
+OPENAI_API_KEY=your-openai-key
 ```
 
-3. **Start all services**
-```bash
-docker-compose up -d
-```
+### 3. Install Dependencies
 
-4. **Access the application**
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:3000
-- Parser Service: http://localhost:8001
-
-5. **Create an account and upload the sample resume**
-- Register at http://localhost:5173/register
-- Upload `sample_resume.txt` (convert to PDF first or use any PDF resume)
-- Start asking questions!
-
-## 🛠️ Local Development Setup
-
-### Backend Setup
-
-```bash
-cd backend
-npm install
-cp ../.env.example .env
-# Edit .env with your configuration
-
-# Run database migrations
-npm run migrate
-
-# Start development server
-npm run dev
-```
-
-### Parser Service Setup
-
-```bash
-cd parser
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
-
-# Start service
-uvicorn app.main:app --reload --port 8001
-```
-
-### Frontend Setup
-
-```bash
-cd frontend
-npm install
-
-# Start development server
-npm run dev
-```
-
-## 🧪 Running Tests
-
-### Backend Tests
-```bash
-cd backend
-npm test
-```
-
-### Parser Tests
-```bash
-cd parser
-pytest tests/ -v --cov=app
-```
-
-### Frontend Tests
-```bash
-cd frontend
-npm test
-```
-
-### Run All Tests with Coverage
-```bash
+```powershell
 # Backend
-cd backend && npm test -- --coverage
+cd backend
+npm install
 
-# Parser
-cd parser && pytest tests/ -v --cov=app --cov-report=html
+# Frontend  
+cd frontend
+npm install
 
-# Frontend
-cd frontend && npm test -- --coverage
+# Parser (use Python virtual environment)
+cd parser
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-## 📖 Usage Examples
+### 4. Start Services
 
-### Uploading a Resume
+**Option 1: Use start script**
 
-1. Navigate to the Upload page
-2. Click or drag-and-drop a PDF/DOCX file
-3. Wait for processing (usually 10-30 seconds)
-4. Review the parsed sections
-5. Edit any incorrectly parsed information
-6. Save changes
-
-### Asking Questions
-
-Navigate to the Chat interface and try these sample questions:
-
-**✅ Good Questions (Grounded in Resume):**
-```
-"What is the candidate's educational background?"
-→ "The candidate has a Bachelor of Science in Computer Science from MIT 
-   (GPA: 3.9/4.0, graduated May 2020) and a Master of Science in Artificial 
-   Intelligence from Stanford University (GPA: 4.0/4.0, graduated June 2022)."
-
-"What programming languages does the candidate know?"
-→ "Based on the Skills section, the candidate knows Python, JavaScript, 
-   TypeScript, C++, Go, and SQL."
-
-"Where has the candidate worked?"
-→ "The candidate has worked at Google as a Senior Software Engineer 
-   (July 2022 - Present), Microsoft as a Software Engineer (June 2020 - 
-   June 2022), and Tesla as a Machine Learning Intern (Summer 2019)."
+```powershell
+.\start-production.ps1
 ```
 
-**❌ Questions Without Information:**
-```
-"What is the candidate's favorite color?"
-→ "Not specified in the resume."
+**Option 2: Start manually (3 separate terminals)**
 
-"Does the candidate have a driver's license?"
-→ "Not specified in the resume."
-```
+```powershell
+# Terminal 1 - Parser
+cd parser
+.venv\Scripts\activate
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8001
 
-### API Usage
+# Terminal 2 - Backend
+cd backend
+npm run dev
 
-**Register a User:**
-```bash
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "password123"
-  }'
+# Terminal 3 - Frontend
+cd frontend
+npm run dev
 ```
 
-**Login:**
-```bash
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "password123"
-  }'
-```
+### 5. Access Application
 
-**Upload Resume:**
-```bash
-curl -X POST http://localhost:3000/api/resumes/upload \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -F "resume=@./sample_resume.pdf"
-```
+- Frontend: <http://localhost:5173>
+- Backend API: <http://localhost:3000>
+- Parser Service: <http://localhost:8001>
 
-**Query Resume:**
-```bash
-curl -X POST http://localhost:3000/api/resumes/RESUME_ID/query \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "question": "What is the candidates educational background?"
-  }'
-```
+## 🚀 Render Deployment
+
+### Production Services
+
+- **Database**: PostgreSQL on dpg-d4ir3cgdl3ps73dedu40-a
+- **Parser**: <https://ragfolio-parser.onrender.com>
+- **Backend**: <https://ragfolio-backend.onrender.com>
+- **Frontend**: <https://ragfolio-yxqd.onrender.com>
+
+### Deployment Steps
+
+1. **Push to GitHub**
+
+   ```powershell
+   git add .
+   git commit -m "Deploy to Render"
+   git push origin main
+   ```
+
+2. **Configure Render Services**
+
+   Each service auto-deploys from GitHub. Set environment variables in Render dashboard:
+
+   **Backend Service:**
+   - `DATABASE_URL`: Use Internal Database URL from PostgreSQL service
+   - `PARSER_SERVICE_URL`: <https://ragfolio-parser.onrender.com>
+   - `JWT_SECRET`: Your secret key
+   - `OPENAI_API_KEY`: Your OpenAI key
+
+   **Frontend Service:**
+   - `VITE_API_URL`: <https://ragfolio-backend.onrender.com>
+
+3. **Run Database Setup**
+
+   Connect to Render PostgreSQL using External Database URL and run `setup_database.sql`
+
+### Environment Files
+
+- **Local**: `.env` (root) + `frontend/.env`
+- **Production**: Environment variables in Render dashboard + `frontend/.env.production`
+
+## 💡 Usage Tips
+
+### Resume Upload
+
+1. Upload PDF/DOCX with hyperlinks (GitHub, LeetCode, LinkedIn)
+2. Parser extracts profile links and analyzes them
+3. Authenticity score calculated based on profile activity
+4. View profile analysis in the Profile tab
+
+### AI Interview Assistant
+
+Ask questions about the resume content:
+
+- "What is the candidate's educational background?"
+- "What programming languages does the candidate know?"
+- "Where has the candidate worked?"
+
+### Profile Analysis
+
+Toggle profile analysis to see:
+
+- GitHub: Repositories, followers, commits
+- LeetCode: Problems solved, contest rating
+- LinkedIn: Connections, recommendations
 
 ## 🔧 Configuration
 
-### RAG Parameters
+Vector database is FAISS (local persistence in `backend/faiss_index/`).
 
-Edit `.env` to customize:
+AI models:
 
-```env
-# Chunking
-CHUNK_SIZE=350          # Tokens per chunk
-CHUNK_OVERLAP=100       # Overlap between chunks
-
-# Retrieval
-TOP_K_RESULTS=5         # Number of chunks to retrieve
-SIMILARITY_THRESHOLD=0.7 # Minimum similarity score (0-1)
-
-# Models
-OPENAI_EMBEDDING_MODEL=text-embedding-3-small
-OPENAI_LLM_MODEL=gpt-4o-mini
-```
-
-### Vector Database Selection
-
-**Using Pinecone (Recommended for Production):**
-```env
-VECTOR_DB_PROVIDER=pinecone
-PINECONE_API_KEY=your-api-key
-PINECONE_ENVIRONMENT=us-east-1
-PINECONE_INDEX_NAME=ragfolio-resumes
-```
-
-**Using FAISS (Local Development):**
-```env
-VECTOR_DB_PROVIDER=faiss
-FAISS_INDEX_PATH=./faiss_index
-```
-
-## 📚 Documentation
-
-- [API Specification](./design/api-spec.md) - Complete REST API documentation
-- [Data Models](./design/data-models.md) - Database schema and data structures
-- [Prompt Engineering](./design/prompt-template-explanation.md) - How we prevent hallucination
-
-## 🔒 Security Features
-
-- JWT-based authentication with bcrypt password hashing
-- Rate limiting (100 requests per 15 minutes per IP)
-- Input validation and sanitization
-- CORS configuration
-- Helmet.js security headers
-- File type and size validation
-- SQL injection prevention via parameterized queries
-
-## 🚢 Deployment
-
-### Docker Production Build
-
-```bash
-# Build and start production containers
-docker-compose -f docker-compose.prod.yml up -d
-
-# View logs
-docker-compose logs -f
-```
-
-### Environment Variables for Production
-
-Ensure you set these in production:
-```env
-NODE_ENV=production
-JWT_SECRET=<strong-random-secret>
-DATABASE_URL=<production-db-url>
-OPENAI_API_KEY=<your-key>
-PINECONE_API_KEY=<your-key>
-```
-
-### Cloud Deployment Options
-
-**AWS:**
-- ECS/Fargate for containers
-- RDS for PostgreSQL
-- S3 for file storage
-- CloudFront for CDN
-
-**GCP:**
-- Cloud Run for containers
-- Cloud SQL for PostgreSQL
-- Cloud Storage for files
-- Cloud CDN
-
-**Heroku:**
-```bash
-# Backend
-cd backend
-heroku create ragfolio-backend
-git push heroku main
-
-# Frontend (Vercel recommended)
-cd frontend
-vercel deploy
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-
-- Write tests for new features
-- Follow existing code style (ESLint/Prettier configured)
-- Update documentation
-- Keep commits atomic and well-described
-
-## 📊 Performance Benchmarks
-
-**Resume Processing:**
-- PDF parsing: ~2-5 seconds
-- Chunking + embedding generation: ~5-10 seconds
-- Total upload time: ~10-15 seconds (typical resume)
-
-**Query Performance:**
-- Embedding generation: ~0.5 seconds
-- Vector search: ~0.1-0.3 seconds (Pinecone), ~0.05 seconds (FAISS)
-- LLM generation: ~1-3 seconds
-- Total query time: ~2-4 seconds
-
-## 🐛 Troubleshooting
-
-**Parser service not connecting:**
-```bash
-# Check if parser is running
-curl http://localhost:8001/health
-
-# Restart parser service
-docker-compose restart parser
-```
-
-**Database connection errors:**
-```bash
-# Check PostgreSQL is running
-docker-compose ps postgres
-
-# Run migrations manually
-docker-compose exec backend npm run migrate
-```
-
-**OpenAI API errors:**
-- Verify API key is correct in `.env`
-- Check OpenAI account has credits
-- Ensure models are available (text-embedding-3-small, gpt-4o-mini)
+- Embeddings: text-embedding-3-small
+- LLM: gpt-4o-mini
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- OpenAI for GPT and embedding models
-- Pinecone for vector database
-- All open-source contributors
-
-## 📧 Contact
-
-For questions or feedback, please open an issue on GitHub.
+MIT License
 
 ---
 
-Built with ❤️ using React, TypeScript, Node.js, Python, and AI
+Built with React, TypeScript, Node.js, Python, and OpenAI
