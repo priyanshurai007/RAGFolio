@@ -7,8 +7,6 @@ import os
 
 from app.parser import parse_document
 from app.section_detector import detect_sections
-from app.link_extractor import extract_links_from_pdf
-from app.profile_analyzer import analyze_all_links
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -38,8 +36,6 @@ class ParseResponse(BaseModel):
     raw_text: str
     sections: dict[str, str]
     metadata: dict
-    links: list[dict] = []
-    profile_analysis: dict = {}
 
 
 @app.get("/health")
@@ -79,32 +75,12 @@ async def parse_resume(file: UploadFile = File(...)):
         # Detect and extract sections
         sections = detect_sections(raw_text)
         
-        # Extract links if PDF
-        links = []
-        profile_analysis = {}
-        
-        if file.filename.lower().endswith('.pdf'):
-            try:
-                links = extract_links_from_pdf(temp_path)
-                logger.info(f"Extracted {len(links)} links from PDF")
-                
-                # Analyze the extracted links
-                if links:
-                    logger.info(f"Analyzing {len(links)} links...")
-                    profile_analysis = analyze_all_links(links)
-                    logger.info(f"Profile analysis complete. Found {profile_analysis['summary']['verified_profiles']} verified profiles")
-                    
-            except Exception as e:
-                logger.warning(f"Could not extract/analyze links: {str(e)}")
-        
         logger.info(f"Successfully parsed document. Found {len(sections)} sections.")
         
         return ParseResponse(
             raw_text=raw_text,
             sections=sections,
-            metadata=metadata,
-            links=links,
-            profile_analysis=profile_analysis
+            metadata=metadata
         )
     
     except Exception as e:

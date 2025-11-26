@@ -62,3 +62,6 @@ uploads/*
 
 # OS
 Thumbs.db
+
+# Deployment credentials
+RagFolio_details.txt

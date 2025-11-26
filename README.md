@@ -1,18 +1,18 @@
 # RAGfolio
 
-> Resume-driven RAG (Retrieval-Augmented Generation) portfolio web application with Resume Authenticity Score and Profile Analysis features.
+> Resume-driven RAG (Retrieval-Augmented Generation) Q&A system powered by AI for intelligent resume analysis.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 🚀 Features
 
-- **📄 Resume Upload**: PDF and DOCX support with link extraction
-- **🔍 Smart Parsing**: Extracts Education, Experience, Skills, Projects, and hyperlinks
-- **🔗 Profile Analysis**: Analyzes GitHub, LeetCode, LinkedIn profiles from resume links
-- **⭐ Authenticity Score**: Calculates resume authenticity based on profile analysis
-- **🤖 AI Interview Assistant**: RAG-powered Q&A based on resume content
-- **🗄️ Vector Search**: FAISS-based semantic search
-- **🔐 Authentication**: JWT-based secure authentication
+- **📄 Resume Upload**: PDF and DOCX support
+- **🔍 Smart Parsing**: Extracts Education, Experience, Skills, Projects sections
+- **🤖 AI Q&A System**: RAG-powered question answering about resume content
+- **🗄️ Vector Search**: FAISS/Pinecone-based semantic search for relevant context
+- **💬 Intelligent Responses**: OpenAI-powered answers with source citations
+- **🔐 Authentication**: JWT-based secure user authentication
+- **📊 Resume Management**: Upload, view, edit, and delete resumes
 
 ## 🏗️ Architecture
 
@@ -192,37 +192,46 @@ npm run dev
 
 ## 💡 Usage Tips
 
-### Resume Upload
+### Resume Upload & Q&A
 
-1. Upload PDF/DOCX with hyperlinks (GitHub, LeetCode, LinkedIn)
-2. Parser extracts profile links and analyzes them
-3. Authenticity score calculated based on profile activity
-4. View profile analysis in the Profile tab
+1. **Upload Resume**: Upload PDF or DOCX file
+2. **Processing**: System parses resume and creates vector embeddings
+3. **Ask Questions**: Use AI chat to query resume content
+4. **Get Answers**: Receive intelligent responses with relevant sources
 
-### AI Interview Assistant
-
-Ask questions about the resume content:
-
+Example questions:
 - "What is the candidate's educational background?"
-- "What programming languages does the candidate know?"
-- "Where has the candidate worked?"
-
-### Profile Analysis
-
-Toggle profile analysis to see:
-
-- GitHub: Repositories, followers, commits
-- LeetCode: Problems solved, contest rating
-- LinkedIn: Connections, recommendations
+- "Which programming languages does the candidate know?"
+- "What projects has the candidate worked on?"
+- "Where has the candidate worked previously?"
+- "What are the candidate's key skills?"
 
 ## 🔧 Configuration
 
-Vector database is FAISS (local persistence in `backend/faiss_index/`).
+### RAG Settings
 
-AI models:
+Configure in `.env`:
 
-- Embeddings: text-embedding-3-small
-- LLM: gpt-4o-mini
+```env
+# Vector Database
+VECTOR_DB_PROVIDER=faiss  # or 'pinecone'
+SIMILARITY_THRESHOLD=0.2  # Minimum similarity for results
+
+# Chunking
+CHUNK_SIZE=500            # Tokens per chunk
+CHUNK_OVERLAP=50          # Overlap between chunks
+TOP_K=5                   # Number of chunks to retrieve
+```
+
+### AI Models
+
+- **Embeddings**: text-embedding-3-small (OpenAI)
+- **LLM**: gpt-4o-mini (OpenAI)
+
+### Vector Storage
+
+- **Local**: FAISS (stored in `backend/faiss_index/`)
+- **Production**: Pinecone (set `PINECONE_API_KEY` and `PINECONE_INDEX`)
 
 ## 📝 License
 

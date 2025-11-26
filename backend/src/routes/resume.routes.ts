@@ -197,33 +197,4 @@ router.post('/:id/query', authMiddleware, async (req: AuthRequest, res: Response
   }
 });
 
-// Get authenticity report
-router.get('/:id/authenticity', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const resume = await getResumeById(req.params.id);
-    
-    if (!resume) {
-      return res.status(404).json({ error: 'Resume not found' });
-    }
-    
-    if (resume.userId !== req.user?.userId) {
-      return res.status(403).json({ error: 'Forbidden' });
-    }
-    
-    // Check if authenticity report exists in parsed data
-    const authenticityReport = resume.parsedData?.authenticityReport;
-    
-    if (!authenticityReport) {
-      return res.status(404).json({ 
-        error: 'Authenticity report not available. Re-upload the resume to generate one.' 
-      });
-    }
-    
-    res.json({ report: authenticityReport });
-  } catch (error: any) {
-    console.error('Authenticity report error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
 export default router;

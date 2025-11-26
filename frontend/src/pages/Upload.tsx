@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload as UploadIcon, File, Loader } from 'lucide-react';
+import { Upload as UploadIcon, File, Loader, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { resumeAPI } from '../lib/api';
 import { useResumeStore } from '../store/resumeStore';
@@ -29,6 +29,22 @@ export default function Upload() {
     }
   };
 
+  const handleDelete = async (e: React.MouseEvent, resumeId: string, filename: string) => {
+    e.stopPropagation();
+    
+    if (!confirm(`Are you sure you want to delete "${filename}"?`)) {
+      return;
+    }
+
+    try {
+      await resumeAPI.delete(resumeId);
+      setResumes(resumes.filter(r => r.id !== resumeId));
+      toast.success('Resume deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete resume');
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
@@ -51,7 +67,7 @@ export default function Upload() {
       addResume(resume);
       toast.success('Resume uploaded successfully!');
       setFile(null);
-      navigate(`/profile/${resume.id}`);
+      navigate(`/chat/${resume.id}`);
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Upload failed');
     } finally {
@@ -127,7 +143,7 @@ export default function Upload() {
               <div
                 key={resume.id}
                 className="border rounded-lg p-4 hover:border-primary-500 cursor-pointer transition-colors"
-                onClick={() => navigate(`/profile/${resume.id}`)}
+                onClick={() => navigate(`/chat/${resume.id}`)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -140,15 +156,26 @@ export default function Upload() {
                     </div>
                   </div>
                   
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/chat/${resume.id}`);
-                    }}
-                    className="btn btn-primary text-sm"
-                  >
-                    Ask Questions
-                  </button>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/chat/${resume.id}`);
+                      }}
+                      className="btn btn-primary text-sm"
+                    >
+                      Ask Questions
+                    </button>
+                    
+                    <button
+                      onClick={(e) => handleDelete(e, resume.id, resume.filename)}
+                      className="btn btn-danger text-sm flex items-center space-x-1"
+                      title="Delete resume"
+                    >
+                      <Trash2 size={16} />
+                      <span>Delete</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

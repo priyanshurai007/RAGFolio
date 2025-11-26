@@ -4,7 +4,6 @@ import { createResumeChunks } from './chunking.service';
 import { getEmbeddingProvider } from './embedding.service';
 import { getVectorStore, VectorSearchResult } from './vector.service';
 import { getLLMProvider, buildPrompt } from './llm.service';
-import { analyzeAuthenticityScore, AuthenticityReport } from './authenticity.service';
 import { config } from '../config';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -14,7 +13,6 @@ export interface ResumeData {
   filename: string;
   filePath: string;
   parsedData: any;
-  authenticityReport?: AuthenticityReport;
 }
 
 export async function processResume(
@@ -91,17 +89,6 @@ export async function processResume(
     await vectorStore.upsert(vectorData);
     console.log('Step 6 complete: Resume processing finished');
     
-    // 7. Run authenticity analysis
-    console.log('Step 7: Running authenticity analysis');
-    const authenticityReport = await analyzeAuthenticityScore(parsed, resumeId);
-    console.log('Step 7 complete: Authenticity score:', authenticityReport.score);
-    
-    // Update database with authenticity report
-    await query(
-      `UPDATE resumes SET parsed_data = $1 WHERE id = $2`,
-      [JSON.stringify({ ...parsed, authenticityReport }), resumeId]
-    );
-    
     console.log('=== Resume Processing Complete ===');
     
     return {
@@ -109,8 +96,7 @@ export async function processResume(
       userId: resume.user_id,
       filename: resume.filename,
       filePath: resume.file_path,
-      parsedData: { ...resume.parsed_data, authenticityReport },
-      authenticityReport,
+      parsedData: resume.parsed_data,
     };
   } catch (error) {
     const err = error as { message: string; stack?: string; response?: any };
