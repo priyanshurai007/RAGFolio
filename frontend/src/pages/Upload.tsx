@@ -13,6 +13,7 @@ export default function Upload() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const addResume = useResumeStore((state) => state.addResume);
+  const deleteResumeFromStore = useResumeStore((state) => state.deleteResume);
 
   useEffect(() => {
     loadResumes();
@@ -39,6 +40,7 @@ export default function Upload() {
     try {
       await resumeAPI.delete(resumeId);
       setResumes(resumes.filter(r => r.id !== resumeId));
+      deleteResumeFromStore(resumeId);
       toast.success('Resume deleted successfully');
     } catch (error) {
       toast.error('Failed to delete resume');
@@ -77,11 +79,11 @@ export default function Upload() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-8">
       <div className="card">
-        <h1 className="text-2xl font-bold mb-6">Upload Your Resume</h1>
+        <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Upload Your Resume</h1>
         
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 sm:p-8 text-center">
           <input
             type="file"
             accept=".pdf,.docx,.doc"
@@ -92,8 +94,8 @@ export default function Upload() {
           />
           
           <label htmlFor="file-upload" className="cursor-pointer">
-            <UploadIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <p className="mt-2 text-sm text-gray-600">
+            <UploadIcon className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400" />
+            <p className="mt-2 text-xs sm:text-sm text-gray-600">
               Click to upload or drag and drop
             </p>
             <p className="text-xs text-gray-500">PDF or DOCX (max 10MB)</p>
@@ -129,7 +131,7 @@ export default function Upload() {
       </div>
       
       <div className="card">
-        <h2 className="text-xl font-bold mb-4">Your Resumes</h2>
+        <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Your Resumes</h2>
         
         {loading ? (
           <div className="flex justify-center py-8">
@@ -138,41 +140,42 @@ export default function Upload() {
         ) : resumes.length === 0 ? (
           <p className="text-gray-500 text-center py-8">No resumes uploaded yet</p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {resumes.map((resume) => (
               <div
                 key={resume.id}
-                className="border rounded-lg p-4 hover:border-primary-500 cursor-pointer transition-colors"
+                className="border rounded-lg p-3 sm:p-4 hover:border-primary-500 cursor-pointer transition-colors"
                 onClick={() => navigate(`/chat/${resume.id}`)}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <File className="h-5 w-5 text-gray-400" />
-                    <div>
-                      <p className="font-medium">{resume.filename}</p>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                    <File className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm sm:text-base truncate">{resume.filename}</p>
                       <p className="text-xs text-gray-500">
                         {new Date(resume.created_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 justify-end sm:justify-start">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/chat/${resume.id}`);
                       }}
-                      className="btn btn-primary text-sm"
+                      className="btn btn-primary text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
                     >
-                      Ask Questions
+                      <span className="hidden sm:inline">Ask Questions</span>
+                      <span className="sm:hidden">Ask</span>
                     </button>
                     
                     <button
                       onClick={(e) => handleDelete(e, resume.id, resume.filename)}
-                      className="btn btn-danger text-sm flex items-center space-x-1"
+                      className="btn btn-danger text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 flex items-center space-x-1"
                       title="Delete resume"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={14} className="sm:w-4 sm:h-4" />
                       <span>Delete</span>
                     </button>
                   </div>

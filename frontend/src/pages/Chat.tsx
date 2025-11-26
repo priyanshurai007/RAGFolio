@@ -75,54 +75,54 @@ export default function Chat() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="card">
-        <h1 className="text-2xl font-bold mb-4">Interview Assistant</h1>
+        <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Interview Assistant</h1>
         
-        <div className="mb-4 flex flex-wrap gap-2">
-          <p className="text-sm text-gray-600 w-full mb-2">Try asking:</p>
+        <div className="mb-3 sm:mb-4 flex flex-wrap gap-2">
+          <p className="text-xs sm:text-sm text-gray-600 w-full mb-1 sm:mb-2">Try asking:</p>
           {sampleQuestions.map((question, idx) => (
             <button
               key={idx}
               onClick={() => setInput(question)}
-              className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full"
+              className="text-xs px-2 sm:px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full"
             >
               {question}
             </button>
           ))}
         </div>
         
-        <div className="border rounded-lg h-[500px] flex flex-col">
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="border rounded-lg h-[400px] sm:h-[500px] flex flex-col">
+          <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 sm:space-y-4">
             {messages.map((message, idx) => (
               <div
                 key={idx}
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`flex items-start space-x-2 max-w-[80%] ${
+                  className={`flex items-start space-x-2 max-w-[85%] sm:max-w-[80%] ${
                     message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''
                   }`}
                 >
                   <div
-                    className={`p-2 rounded-full ${
+                    className={`p-1.5 sm:p-2 rounded-full flex-shrink-0 ${
                       message.role === 'user' ? 'bg-primary-100' : 'bg-gray-100'
                     }`}
                   >
                     {message.role === 'user' ? (
-                      <User size={16} />
+                      <User size={14} className="sm:w-4 sm:h-4" />
                     ) : (
-                      <Bot size={16} />
+                      <Bot size={14} className="sm:w-4 sm:h-4" />
                     )}
                   </div>
                   
-                  <div>
+                  <div className="min-w-0">
                     <div
-                      className={`rounded-lg p-3 ${
+                      className={`rounded-lg p-2 sm:p-3 ${
                         message.role === 'user'
                           ? 'bg-primary-600 text-white'
                           : 'bg-gray-100'
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{message.content}</p>
                     </div>
                     
                     {message.sources && message.sources.length > 0 && (
@@ -156,22 +156,22 @@ export default function Chat() {
             <div ref={messagesEndRef} />
           </div>
           
-          <form onSubmit={handleSubmit} className="border-t p-4">
+          <form onSubmit={handleSubmit} className="border-t p-2 sm:p-4">
             <div className="flex space-x-2">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask a question about the resume..."
-                className="input flex-1"
+                placeholder="Ask a question..."
+                className="input flex-1 text-sm sm:text-base"
                 disabled={loading}
               />
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
-                className="btn btn-primary"
+                className="btn btn-primary px-3 sm:px-4"
               >
-                <Send size={20} />
+                <Send size={18} className="sm:w-5 sm:h-5" />
               </button>
             </div>
           </form>

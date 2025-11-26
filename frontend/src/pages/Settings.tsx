@@ -13,8 +13,8 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold">Settings</h1>
+    <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6">
+      <h1 className="text-2xl sm:text-3xl font-bold">Settings</h1>
       
       <div className="card">
         <h2 className="text-xl font-bold mb-4">Account Information</h2>
@@ -58,7 +58,7 @@ export default function Settings() {
               <li>Automatic section detection and parsing</li>
               <li>AI-powered Q&A using OpenAI embeddings</li>
               <li>Vector storage with Pinecone or FAISS</li>
-              <li>Edit and manage your resume data</li>
+              <li>Delete and manage your resumes</li>
             </ul>
           </div>
           

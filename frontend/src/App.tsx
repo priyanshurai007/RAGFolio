@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useAuthStore } from './store/authStore';
+import { authAPI } from './lib/api';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -13,6 +15,38 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  const [isInitialized, setIsInitialized] = useState(false);
+  const { token, login, logout } = useAuthStore();
+
+  useEffect(() => {
+    const initAuth = async () => {
+      // If token exists, verify it's still valid
+      if (token) {
+        try {
+          const response = await authAPI.me();
+          const user = response.data.user;
+          // Re-login to ensure state is synced
+          login(user, token);
+        } catch (error) {
+          // Token is invalid, clear it
+          logout();
+        }
+      }
+      setIsInitialized(true);
+    };
+
+    initAuth();
+  }, []);
+
+  // Show loading while initializing
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
