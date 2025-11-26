@@ -50,6 +50,7 @@ htmlcov/
 *.sqlite
 *.sqlite3
 postgres-data/
+RagFolio_details.txt
 
 # Vector DB
 faiss_index/
