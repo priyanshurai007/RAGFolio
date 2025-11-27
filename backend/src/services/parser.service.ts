@@ -118,7 +118,7 @@ export async function parseResume(filePath: string): Promise<ParsedResume> {
         headers: {
           ...formData.getHeaders(),
         },
-        timeout: 30000, // 30 second timeout
+        timeout: 60000, // 60 second timeout for Render cold starts
         maxContentLength: Infinity,
         maxBodyLength: Infinity,
       }

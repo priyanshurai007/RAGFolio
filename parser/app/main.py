@@ -38,6 +38,20 @@ class ParseResponse(BaseModel):
     metadata: dict
 
 
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {
+        "service": "RAGfolio Parser",
+        "status": "running",
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "/health",
+            "parse": "/parse (POST)"
+        }
+    }
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
@@ -98,4 +112,6 @@ async def parse_resume(file: UploadFile = File(...)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    port = int(os.getenv("PORT", 8001))
+    logger.info(f"Starting parser service on port {port}")
+    uvicorn.run(app, host="0.0.0.0", port=port)
