@@ -33,13 +33,32 @@ app.get('/health', (req: express.Request, res: express.Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Root endpoint
+app.get('/', (req: express.Request, res: express.Response) => {
+  res.json({ 
+    service: 'RAGfolio Backend API',
+    version: '1.0.0',
+    status: 'running',
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth/*',
+      resumes: '/api/resumes/*'
+    }
+  });
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/resumes', resumeRoutes);
 
 // 404 handler
 app.use((req: express.Request, res: express.Response) => {
-  res.status(404).json({ error: 'Route not found' });
+  console.log(`404 Not Found: ${req.method} ${req.path}`);
+  res.status(404).json({ 
+    error: 'Route not found',
+    path: req.path,
+    method: req.method
+  });
 });
 
 // Error handler
