@@ -61,14 +61,20 @@ router.post(
         return res.status(401).json({ error: 'Unauthorized' });
       }
       
-      console.log('Processing resume for user:', req.user.userId);
-      console.log('File:', req.file.originalname, 'at', req.file.path);
+      console.log('=== Upload Request Started ===');
+      console.log('User ID:', req.user.userId);
+      console.log('File:', req.file.originalname);
+      console.log('File path:', req.file.path);
+      console.log('File size:', req.file.size);
+      console.log('Parser URL:', process.env.PARSER_SERVICE_URL);
       
       const resume = await processResume(
         req.user.userId,
         req.file.originalname,
         req.file.path
       );
+      
+      console.log('=== Upload Success ===');
       
       res.status(201).json({
         message: 'Resume uploaded and processed successfully',
@@ -80,9 +86,25 @@ router.post(
       });
     } catch (error: unknown) {
       const err = error as { message: string; stack?: string };
-      console.error('Upload error:', err.message);
-      console.error('Stack:', err.stack);
-      res.status(500).json({ error: err.message || 'Upload failed' });
+      console.error('=== Upload Error ===');
+      console.error('Error message:', err.message);
+      console.error('Error stack:', err.stack);
+      
+      // Return user-friendly error message
+      let userMessage = 'Upload failed. Please try again.';
+      
+      if (err.message.includes('Parser service error')) {
+        userMessage = 'Parser service unavailable. Please wait 60 seconds and try again (cold start).';
+      } else if (err.message.includes('OpenAI')) {
+        userMessage = 'AI service error. Please try again.';
+      } else if (err.message.includes('Database') || err.message.includes('database')) {
+        userMessage = 'Database error. Please contact support.';
+      }
+      
+      res.status(500).json({ 
+        error: userMessage,
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined
+      });
     }
   }
 );

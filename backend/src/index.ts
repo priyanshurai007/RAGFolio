@@ -33,6 +33,54 @@ app.get('/health', (req: express.Request, res: express.Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Diagnostics endpoint
+app.get('/diagnostics', async (req: express.Request, res: express.Response) => {
+  try {
+    const { query: dbQuery } = await import('./db');
+    const { checkParserHealth } = await import('./services/parser.service');
+    
+    // Check database
+    let dbStatus = 'unknown';
+    try {
+      await dbQuery('SELECT 1');
+      dbStatus = 'connected';
+    } catch (error) {
+      dbStatus = 'error: ' + (error as Error).message;
+    }
+    
+    // Check parser service
+    const parserHealthy = await checkParserHealth();
+    
+    res.json({
+      status: 'running',
+      environment: config.env,
+      timestamp: new Date().toISOString(),
+      services: {
+        database: dbStatus,
+        parser: {
+          url: config.parser.serviceUrl,
+          healthy: parserHealthy,
+          status: parserHealthy ? 'connected' : 'unavailable'
+        },
+        vectorDb: {
+          provider: config.vectorDb.provider
+        }
+      },
+      config: {
+        uploadDir: config.upload.uploadDir,
+        maxFileSize: config.upload.maxFileSizeMB + 'MB',
+        chunkSize: config.rag.chunkSize,
+        topK: config.rag.topK
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Diagnostics failed',
+      message: (error as Error).message 
+    });
+  }
+});
+
 // Root endpoint
 app.get('/', (req: express.Request, res: express.Response) => {
   res.json({ 
@@ -41,6 +89,7 @@ app.get('/', (req: express.Request, res: express.Response) => {
     status: 'running',
     endpoints: {
       health: '/health',
+      diagnostics: '/diagnostics',
       auth: '/api/auth/*',
       resumes: '/api/resumes/*'
     }
